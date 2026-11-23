@@ -1,0 +1,22 @@
+{
+  "name": "confluence-plantuml-migrate",
+  "version": "0.1.0",
+  "description": "Moves old PlantUML macros on Confluence Cloud pages into the PlantUML Diagram macro, keeping the diagram text exactly. Dry run by default, with a log and undo.",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "confluence-plantuml-migrate": "bin/confluence-plantuml-migrate.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}

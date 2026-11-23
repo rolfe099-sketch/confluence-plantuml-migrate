@@ -1,0 +1,3 @@
+# Dry-run reports, plans and logs hold page content and titles: keep them out of the repository.
+plantuml-migrate-*/
+node_modules/
