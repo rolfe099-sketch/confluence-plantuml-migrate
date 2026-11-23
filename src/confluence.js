@@ -43,9 +43,10 @@ function client(o) {
       } catch (e) {
         throw new HttpError(`${method} ${path}: network error (${e && e.message ? e.message : 'unknown'})`, 0);
       }
-      // Too many requests, or Confluence busy: the request did nothing, so
-      // waiting and asking again is safe, for a write too.
-      if ((res.status === 429 || res.status === 503) && attempt < retries) {
+      // Too many requests (429): Confluence did nothing, so waiting and
+      // asking again is safe, for a write too. Busy (503): asked again for a
+      // read only, since a gateway may answer 503 to a save that went through.
+      if ((res.status === 429 || (res.status === 503 && method === "GET")) && attempt < retries) {
         const ra = Number(res.headers && res.headers.get ? res.headers.get('retry-after') : NaN);
         await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra, 120) * 1000 : 2000 * 2 ** attempt);
         continue;

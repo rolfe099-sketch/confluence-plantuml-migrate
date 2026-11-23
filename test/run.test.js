@@ -85,7 +85,7 @@ test('dry run writes nothing to Confluence and plans exactly', async () => {
   assert.equal(r.plan.pages[0].moves.length, 2);
   const report = fs.readFileSync(r.reportFile, 'utf8');
   assert.match(report, /Before:/);
-  assert.match(report, /Left alone: `plantuml`: type = ditaa/);
+  assert.match(report, /Left alone: plantuml: type = ditaa/);
   assert.ok(report.includes(F.avono(F.SEQ, F.p('title', 'Greeting'))), 'the exact before is in the report');
   assert.ok(lines.some((l) => /Pages that would change: 1, with 2 macro/.test(l)));
   assert.ok(fake.calls.every((c) => c.redirect === 'error'));
@@ -266,8 +266,12 @@ test('the source has no telemetry: one network call site, to the given site only
   const src = path.join(__dirname, '..', 'src');
   const files = [...fs.readdirSync(src).map((f) => path.join(src, f)), path.join(__dirname, '..', 'bin', 'confluence-plantuml-migrate.js')];
   const all = files.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
-  assert.ok(!/require\(['"](https?|net|tls|dgram|dns|http2)['"]\)/.test(all), 'no network modules');
+  assert.ok(!/require\(['"](node:)?(https?|net|tls|dgram|dns|http2|child_process|worker_threads|cluster|inspector)['"]\)/.test(all), 'no network or process modules');
+  assert.ok(!/\bimport\s*\(|\bimport\s+[\w{*]|\beval\s*\(|new\s+Function\s*\(|\bWebSocket\b|\bXMLHttpRequest\b/.test(all), 'no dynamic imports or code from strings');
+  const requires = [...all.matchAll(/require\(['"]([^'"]+)['"]\)/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(requires.filter((r) => !r.startsWith('.')))].sort(), ['crypto', 'fs', 'path'], 'only these built-in modules');
   assert.equal((all.match(/doFetch\(/g) || []).length, 1, 'one fetch call');
+  assert.ok(!/globalThis\.fetch\(|[^.\w]fetch\(/.test(all), 'fetch is only called through the client');
   assert.ok(!/https?:\/\/(?!your-site|example|x\.)[a-z]/i.test(all.replace(/https:\/\/your-site\.atlassian\.net/g, '')), 'no other web addresses');
   const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
   assert.ok(!pkg.dependencies && !pkg.devDependencies, 'no dependencies');

@@ -29,12 +29,14 @@ const RULES = Object.freeze({
   },
   // PowerPlantUML (Skylab Ventures), on Connect. Its descriptor also has
   // `uml`, `url` and `encodedUML` parameters, which hold the text outside
-  // the body: those macros are left alone.
+  // the body: those macros are left alone. Its `language` setting's values
+  // are not published; a macro with any value but an empty one, plantuml or
+  // uml is left alone, in case it names a diagram type we do not draw.
   'power-plant-uml-macro': {
     app: 'PowerPlantUML (Skylab Ventures), on Connect',
-    ignoredParams: ['imageType', 'language'],
+    ignoredParams: ['imageType'],
     blockingParams: ['uml', 'url', 'encodedUML'],
-    typeParam: null,
+    typeParam: { name: 'language', drawn: ['', 'plantuml', 'uml'] },
   },
   // PlantUML SVG for Confluence (Grovr), on Connect. `remoteurl` loads the
   // text from a web address: left alone.

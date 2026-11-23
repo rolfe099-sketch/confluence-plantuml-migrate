@@ -5,7 +5,7 @@
 const fs = require('fs');
 
 function openLog(file) {
-  const fd = fs.openSync(file, 'a');
+  const fd = fs.openSync(file, 'a', 0o600);
   return {
     file,
     write(entry) {

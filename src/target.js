@@ -27,7 +27,24 @@ const DEFAULT_TARGET = Object.freeze({
   from: 'built-in (normal cloud, production app)',
 });
 
-const KEY_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/static\/plantuml-diagram$/;
+/**
+ * The app's ID in each Atlassian cloud (each cloud has its own registration).
+ * A key whose app ID is not one of these is refused: macros are never
+ * written with another app's key.
+ */
+const KNOWN_APPS = Object.freeze({
+  '42490490-9dd5-4eb8-8d52-5801665c460a': 'Atlassian cloud',
+  'c607ed76-ebea-40b9-a3fc-2a368de9d10e': 'Atlassian Isolated Cloud',
+  '6063c21a-73cc-48a6-a305-094b27732f76': 'Atlassian Government Cloud',
+});
+
+/** The cloud of a PlantUML Diagram key, or null when the app is not ours. */
+function cloudOfKey(key) {
+  const app = String(key).split('/')[0];
+  return Object.prototype.hasOwnProperty.call(KNOWN_APPS, app) ? KNOWN_APPS[app] : null;
+}
+
+const KEY_RE =/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/static\/plantuml-diagram$/;
 
 function attr(key, inner) {
   return `<ac:adf-attribute key="${key}">${inner}</ac:adf-attribute>`;
@@ -145,4 +162,4 @@ function targetFromReference(storage, pageId) {
   return { extensionKey: f.extensionKey, title: f.title || 'PlantUML Diagram', environment: f.environment, from: `reference page ${pageId}` };
 }
 
-module.exports = { DEFAULT_TARGET, buildMacro, findTargetMacros, targetFromReference, KEY_RE };
+module.exports = { DEFAULT_TARGET, buildMacro, findTargetMacros, targetFromReference, KEY_RE, KNOWN_APPS, cloudOfKey };

@@ -11,6 +11,8 @@
     "bin",
     "src",
     "README.md",
+    "SECURITY.md",
+    "TESTING.md",
     "LICENSE"
   ],
   "engines": {

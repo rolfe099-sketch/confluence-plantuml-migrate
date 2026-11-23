@@ -54,7 +54,8 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--token' || a.startsWith('--token=')) throw new Stop('the token is never taken from the command line: set CONFLUENCE_API_TOKEN instead');
-    if (!a.startsWith('--')) throw new Stop(`unexpected argument: ${a}`);
+    // Never echoed: a token pasted in the wrong place must not be printed.
+    if (!a.startsWith('--')) throw new Stop(`unexpected argument number ${i + 1} (not shown)`);
     const [flag, inline] = a.includes('=') ? [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)] : [a, undefined];
     if (takes.has(flag)) {
       const v = inline !== undefined ? inline : argv[++i];
@@ -62,7 +63,7 @@ function parseArgs(argv) {
       if (flag === '--site') o.site = v;
       else if (flag === '--space') o.spaces.push(v);
       else if (flag === '--page') {
-        if (!/^\d+$/.test(v)) throw new Stop(`--page takes a page id (digits): ${v}`);
+        if (!/^\d+$/.test(v)) throw new Stop('--page takes a page id (digits)');
         o.pages.push(v);
       } else if (flag === '--macro') {
         if (!SUPPORTED.includes(v)) throw new Stop(`--macro must be one of ${SUPPORTED.join(', ')}`);
@@ -92,7 +93,7 @@ function parseArgs(argv) {
   if ((o.undoLog || o.apply) && o.macros.length) throw new Stop('--macro is for the dry run; the plan or the log decides the rest');
   if (!o.macros.length) o.macros = [...SUPPORTED];
   if (o.undoLog) {
-    if (o.planFile || o.spaces.length || o.pages.length || o.allSpaces) throw new Stop('--undo takes only --site, --apply, --skip-edited, --pause, --notify and --out');
+    if (o.planFile || o.spaces.length || o.pages.length || o.allSpaces || o.outDir || o.referencePage) throw new Stop('--undo takes only --site, --apply, --skip-edited, --pause and --notify (its log goes next to the log it undoes)');
   } else if (o.skipEdited) throw new Stop('--skip-edited is only for --undo');
   else if (o.apply) {
     if (!o.planFile) throw new Stop('--apply needs --plan, the plan.json of a dry run you have read');
@@ -133,7 +134,10 @@ async function main() {
     return out;
   };
   const io = {
-    print: (line) => console.log(redact(line)),
+    // Page titles come from page authors: control characters (terminal
+    // escape sequences) are replaced before anything is printed.
+    // eslint-disable-next-line no-control-regex
+    print: (line) => console.log(redact(line).replace(/[\u0000-\u0008\u000b-\u001f\u007f\u009b]/g, '?')),
     now: () => new Date().toISOString(),
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     redact,
