@@ -18,15 +18,25 @@ function openLog(file) {
   };
 }
 
-function readLog(file) {
-  const lines = fs.readFileSync(file, 'utf8').split('\n').filter((l) => l.trim() !== '');
-  return lines.map((l, i) => {
+/**
+ * Reads a log. A last line cut short (the run was killed while writing it)
+ * is skipped with a warning; a bad line anywhere else stops.
+ */
+function readLog(file, io) {
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter((x) => x.trim() !== '');
+  const out = [];
+  lines.forEach((x, i) => {
     try {
-      return JSON.parse(l);
+      out.push(JSON.parse(x));
     } catch {
+      if (i === lines.length - 1) {
+        if (io) io.print(`  note: the last line of ${file} is incomplete (the run was cut off while writing it); it is skipped.`);
+        return;
+      }
       throw new Error(`${file}: line ${i + 1} is not valid JSON`);
     }
   });
+  return out;
 }
 
 module.exports = { openLog, readLog };

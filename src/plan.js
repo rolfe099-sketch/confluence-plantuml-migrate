@@ -13,7 +13,8 @@ const sha256 = (s) => crypto.createHash('sha256').update(s, 'utf8').digest('hex'
  * Plans the rewrite of one page.
  * @param {string} storage the page's storage format
  * @param {{extensionKey:string,title:string,environment:string}} target
- * @param {{newId?:()=>string}} [opts] newId is for tests only
+ * @param {{newId?:()=>string, only?:string[]}} [opts] only: the old macro
+ *   names to move (default: all known); newId is for tests only
  * @returns {{moves:Array, skipped:Array, others:Array, storage:string|null}}
  *   storage is the new storage, or null when nothing moves.
  */
@@ -27,6 +28,10 @@ function planPage(storage, target, opts = {}) {
   // macro around it keeps every other character. A known macro inside a
   // known macro cannot happen with plain-text bodies, but is refused anyway.
   for (const m of macros) {
+    if (opts.only && Object.prototype.hasOwnProperty.call(RULES, m.name) && !opts.only.includes(m.name)) {
+      others.push({ name: m.name, start: m.start });
+      continue;
+    }
     if (!Object.prototype.hasOwnProperty.call(RULES, m.name)) {
       if (looksLikePlantUml(m.name)) others.push({ name: m.name, start: m.start });
       continue;
@@ -122,8 +127,11 @@ function checkSaved(sentStorage, savedStorage, moves, target) {
     if (f.extensionKey !== target.extensionKey) return { ok: false, reason: `new macro ${k + 1} has another key on the saved page` };
     if (f.source !== mv.text) return { ok: false, reason: `the text of new macro ${k + 1} differs on the saved page` };
   }
-  const sentMacros = findMacros(sentStorage).map((m) => m.raw).sort();
-  const savedMacros = findMacros(savedStorage).map((m) => m.raw).sort();
+  // Confluence may give a macro an id or a schema version when it saves a
+  // page; those two attributes are not compared, everything else is.
+  const norm = (raw) => raw.replace(/\s(ac:macro-id|ac:schema-version)="[^"]*"/g, '');
+  const sentMacros = findMacros(sentStorage).map((m) => norm(m.raw)).sort();
+  const savedMacros = findMacros(savedStorage).map((m) => norm(m.raw)).sort();
   if (sentMacros.join('\u0001') !== savedMacros.join('\u0001')) return { ok: false, reason: 'the other macros on the saved page differ from what was sent' };
   return { ok: true, identical: sentStorage === savedStorage };
 }

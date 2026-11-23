@@ -33,7 +33,8 @@ Options:
   --all-spaces          every space the account can see (instead of --space)
   --page ID             only this page (repeat for more)
   --macro NAME          only this old macro name (repeat; default: all known)
-  --limit N             at most N pages (default 25, at most 1000)
+  --limit N             at most N pages (default 25, at most 1000); with
+                        --apply, the first N pages of the plan
   --pause SECONDS       wait between page writes (default 2, at least 0.5)
   --reference-page ID   read the new macro's key from a page where you
                         inserted one PlantUML Diagram macro (required
@@ -88,6 +89,7 @@ function parseArgs(argv) {
   if (!Number.isInteger(o.limit) || o.limit < 1 || o.limit > 1000) throw new Stop('--limit must be a whole number from 1 to 1000');
   if (!Number.isFinite(o.pause) || o.pause < 0.5) throw new Stop('--pause must be at least 0.5 seconds');
   o.pauseMs = Math.round(o.pause * 1000);
+  if ((o.undoLog || o.apply) && o.macros.length) throw new Stop('--macro is for the dry run; the plan or the log decides the rest');
   if (!o.macros.length) o.macros = [...SUPPORTED];
   if (o.undoLog) {
     if (o.planFile || o.spaces.length || o.pages.length || o.allSpaces) throw new Stop('--undo takes only --site, --apply, --skip-edited, --pause, --notify and --out');

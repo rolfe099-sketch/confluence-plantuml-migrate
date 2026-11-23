@@ -198,7 +198,7 @@ app's production version on Atlassian's normal cloud.
 
 ## How it was tested
 
-- 34 unit tests (`npm test`) on fixtures written from the real storage
+- 42 unit tests (`npm test`) on fixtures written from the real storage
   formats: several macros on a page; macros in tables, expands and
   layouts; a 300,000-character diagram; Chinese, Hebrew, emoji, a no-break
   space, quotes, `&`, `<`, tabs, CR and CRLF line ends, `]]>` inside the
