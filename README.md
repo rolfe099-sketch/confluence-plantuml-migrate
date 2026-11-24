@@ -281,10 +281,9 @@ test page first, and tell us what you see.
     any write.
   - Confluence refused a stale save with 409.
   - Undo restored every page to its original storage, byte for byte.
-- **Not tested end to end: sign-in with an API token.** The end-to-end run
-  went through a signed-in browser session instead, so the
-  `Authorization` header this script sends was not tested against
-  Atlassian.
+- **With an API token:** on 24 November 2026, a dry run, apply and undo
+  ran on one test page of the same site, signed in with a classic API
+  token. The page was checked after the save, and undo restored it.
 
 ## Releases
 

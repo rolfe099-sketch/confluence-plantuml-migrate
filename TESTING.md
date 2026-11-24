@@ -82,8 +82,13 @@
 **Setup:**
 
 - The site was our own development Confluence Cloud site, with test pages in a personal space.
-- The script's own `src/` code ran unchanged. Only its `fetch` was bridged into a signed-in browser session, because no API token was used.
-- So **sign-in with an API token was not tested end to end.**
+- The script's own `src/` code ran unchanged. On 23 November, its `fetch` was bridged into a signed-in browser session.
+- On 24 November, the owner ran the command line itself with a classic API token, on page 47742978:
+  - the dry run planned 2 moves;
+  - apply saved version 6, and the after-save check passed;
+  - undo restored the content of version 5 as version 7, and the check passed.
+
+  So sign-in with an API token is tested end to end, for these three steps.
 
 **Test pages:**
 
@@ -127,6 +132,4 @@
   - **Command line:** a stray argument is not printed.
   - **Docs:** the README states what the files contain, what was not tested, and the limits.
 
-  Still open for the owner:
-  - one real run with an API token on the development site;
-  - creating the repository and tagging the release.
+  The review's last blocker, a real API-token run, was done on 24 November (see above).
